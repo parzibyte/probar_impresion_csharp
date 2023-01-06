@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probar impresión con C#</title>
+</head>
+
+<body>
+    <select name="" id="listaImpresoras"></select>
+    <br>
+    <br>
+    <input type="text" placeholder="Texto" id="texto">
+    <br>
+    <br>
+    <button id="btnProbar">Probar</button>
+    <script>
+        document.addEventListener("DOMContentLoaded", async () => {
+            const $listaImpresoras = document.querySelector("#listaImpresoras"),
+                $texto = document.querySelector("#texto"),
+                $btnProbar = document.querySelector("#btnProbar");
+            const impresoras = await (await fetch("http://localhost:2112/impresoras")).json();
+            for (const impresora of impresoras) {
+                const option = Object.assign(document.createElement("option"), {
+                    value: impresora,
+                    text: impresora,
+                });
+                $listaImpresoras.append(option);
+            }
+
+            $btnProbar.addEventListener("click", async () => {
+                const impresoraSeleccionada = $listaImpresoras.value;
+                const texto = $texto.value;
+                if (!impresoraSeleccionada) {
+                    return alert("Seleccione una impresora");
+                }
+                if (!texto) {
+                    return alert("Escriba el texto que se envía a la impresora");
+                }
+
+                const respuesta = await (await fetch("http://localhost:2112/imprimir", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        impresora: impresoraSeleccionada,
+                        texto,
+                    }),
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                })).json();
+                console.log({ respuesta });
+            });
+        });
+    </script>
+</body>
+
+</html>
